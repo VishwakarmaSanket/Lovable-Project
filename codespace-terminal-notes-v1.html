@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>codeSpace — Terminal Engineering Notes</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,wght@0,300;0,600;0,700;0,900;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0E0F14;--paper:#F5F2EB;--paper2:#EDE9DF;--paper3:#E4DFD3;
+  --rule:#D4CEBC;--muted:#6B6455;--accent:#C84B1F;--accent2:#1A6B4A;
+  --accent3:#1B4587;--gold:#B8860B;--code-bg:#1A1C24;--code-text:#E2DCCC;
+  --flag-c:#5BA4CF;--val-c:#F4A261;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:14.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.layout{display:flex;min-height:100vh}
+nav{width:260px;flex-shrink:0;background:var(--ink);position:sticky;top:0;height:100vh;overflow-y:auto;padding:32px 0 40px}
+.nav-brand{padding:0 24px 28px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:24px}
+.nav-brand .logo{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:white;margin-bottom:4px}
+.nav-brand .logo span{color:var(--accent)}
+.nav-brand .sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.35);letter-spacing:.06em}
+.nav-group-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:rgba(255,255,255,.25);letter-spacing:.12em;text-transform:uppercase;padding:16px 24px 8px}
+nav a{display:flex;align-items:center;gap:12px;padding:9px 24px;text-decoration:none;color:rgba(255,255,255,.5);font-size:12.5px;border-left:2px solid transparent;transition:all .15s ease}
+nav a:hover{color:white;background:rgba(255,255,255,.04)}
+nav a.active{color:white;border-left-color:var(--accent);background:rgba(200,75,31,.08)}
+nav a:hover .nav-num,nav a.active .nav-num{background:var(--accent);color:white}
+.nav-num{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:rgba(255,255,255,.08);border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:9px}
+main{flex:1;max-width:calc(99% - 256px);padding:56px 56px 80px}
+.hero{margin-bottom:64px;padding-bottom:40px;border-bottom:1px solid var(--rule)}
+.hero-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.12em;margin-bottom:16px}
+.hero h1{font-family:'Fraunces',serif;font-size:clamp(36px,5vw,58px);font-weight:900;line-height:1.05;letter-spacing:-.02em;color:var(--ink);margin-bottom:20px}
+.hero h1 em{font-style:italic;color:var(--accent);font-weight:900}
+.hero-desc{font-size:16px;color:var(--muted);max-width:760px;line-height:1.65;margin-bottom:24px}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero-tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--rule);padding:4px 10px;border-radius:999px}
+.section{margin-bottom:72px;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.section-header{display:flex;align-items:flex-start;gap:20px;margin-bottom:28px}
+.section-num-big{font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:var(--rule);user-select:none;line-height:1}
+.section-title-block{flex:1}
+.section-title{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--ink);line-height:1.2;margin-bottom:4px}
+.section-subtitle{font-size:13px;color:var(--muted)}
+h3{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--ink);margin:28px 0 12px}
+h4{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:400;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px}
+p{color:#2A2720;margin-bottom:12px}
+strong{font-weight:500;color:var(--ink)}
+ul,ol{margin:0 0 12px 22px}li{color:#2A2720;margin-bottom:6px}
+code{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);background:var(--paper3);border:1px solid var(--rule);padding:1px 5px;border-radius:4px}
+.concept{background:var(--paper2);border-left:3px solid var(--accent3);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0}
+.concept-label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--accent3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px}
+.concept p{font-size:14px;line-height:1.65;color:var(--ink);margin:0}
+.note{background:#FEF9EC;border:1px solid #EDD97A;border-radius:6px;padding:12px 16px;margin:16px 0;display:flex;gap:12px;align-items:flex-start}
+.warn{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:6px;padding:12px 16px;margin:16px 0;display:flex;gap:12px;align-items:flex-start}
+.note p{color:#5C4A00;font-size:13px;margin:0;line-height:1.6}.warn p{color:#7F1D1D;font-size:13px;margin:0;line-height:1.6}
+.step-label{display:inline-block;background:var(--accent);color:white;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:4px;margin:16px 0 8px}
+.step-label.green{background:var(--accent2)}.step-label.blue{background:var(--accent3)}.step-label.gold{background:var(--gold)}
+.code-wrap{background:var(--code-bg);border-radius:8px;margin:16px 0;overflow:hidden}
+.code-header{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06)}
+.code-label{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em}
+.copy-btn{font-family:'IBM Plex Mono',monospace;font-size:10px;color:rgba(255,255,255,.5);background:transparent;border:1px solid rgba(255,255,255,.15);padding:3px 8px;border-radius:4px;cursor:pointer;text-transform:uppercase}
+pre{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--code-text);padding:16px;overflow-x:auto;line-height:1.6;white-space:pre}
+.c-cmd{color:#87CEEB;font-weight:600}.c-flag{color:var(--flag-c)}.c-val{color:var(--val-c)}.c-str{color:#98C379}.c-comment{color:rgba(255,255,255,.28);font-style:italic}.c-key{color:#C678DD}.c-pipe{color:#E5C07B}
+.flag-table,.compare{width:100%;border-collapse:collapse;margin:16px 0;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.flag-table th{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;background:var(--paper3);text-align:left;padding:10px 14px;font-weight:500}
+.flag-table td{padding:10px 14px;border-top:1px solid var(--rule);vertical-align:top}
+.flag-table tbody tr:hover{background:var(--paper2)}
+.f-name{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:var(--flag-c)}.f-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--val-c)}.f-desc{font-size:13px;color:var(--ink)}.f-why{font-size:12px;color:var(--muted)}
+.compare th{background:var(--ink);color:white;font-size:13px;font-weight:600;padding:12px 14px;text-align:left}
+.compare td{padding:12px 14px;border-top:1px solid var(--rule);font-size:13px}.compare .row-label{font-size:13px;font-weight:600;color:var(--ink)}.compare .col-a{color:var(--muted)}.compare .col-b{color:var(--accent2);font-weight:500}
+.flow{margin:16px 0}.flow-step{display:flex;gap:16px;min-height:56px}.flow-line{display:flex;flex-direction:column;align-items:center;padding-top:6px}.flow-dot{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0}.flow-connector{width:2px;flex:1;background:var(--rule);margin-top:4px}.flow-content{padding-bottom:16px;flex:1}.flow-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:2px}.flow-detail{font-size:12.5px;color:var(--muted)}
+.scale-diagram{background:var(--paper2);border:1px solid var(--rule);border-radius:10px;padding:20px;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:2;color:var(--muted);margin:16px 0}.scale-diagram .hi{color:var(--ink);font-weight:bold}.scale-diagram .green{color:var(--accent2)}.scale-diagram .red{color:var(--accent)}
+.arch{background:var(--paper2);border:1px solid var(--rule);border-radius:12px;padding:24px;margin:16px 0}
+.arch-row{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}
+.arch-box{border:2px solid var(--rule);border-radius:9px;padding:12px 16px;background:var(--paper);min-width:150px;text-align:center}
+.arch-box strong{display:block;font-family:'IBM Plex Mono',monospace;font-size:12px}.arch-box span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.arch-box.blue{border-color:var(--accent3)}.arch-box.green{border-color:var(--accent2)}.arch-box.accent{border-color:var(--accent)}.arch-box.gold{border-color:var(--gold)}
+.arch-arrow{font-family:'IBM Plex Mono',monospace;color:var(--muted);font-size:18px}
+.quiz{background:var(--ink);color:white;border-radius:10px;padding:20px;margin:16px 0}.quiz h3{color:white;margin-top:0}.quiz li{color:rgba(255,255,255,.75)}.quiz strong{color:white}
+.source{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px}.source a{color:var(--accent3)}
+.divider{border:none;border-top:1px solid var(--rule);margin:40px 0}
+footer{display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);border-top:2px solid var(--rule);padding-top:24px;margin-top:60px}
+@media(max-width:768px){nav{display:none}main{padding:32px 24px 60px;max-width:100%}.hero h1{font-size:32px}footer{flex-direction:column;gap:8px}.arch-row{flex-direction:column}.arch-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav>
+  <div class="nav-brand"><div class="logo">Code<span>Space</span></div><div class="sub">Terminal Engineering Notes · V1</div></div>
+  <div class="nav-group-label">Mental model</div>
+  <a href="#summary"><span class="nav-num">00</span>What are we building?</a>
+  <a href="#terminal"><span class="nav-num">01</span>Terminal basics</a>
+  <a href="#pty"><span class="nav-num">02</span>TTY vs PTY</a>
+  <div class="nav-group-label">Implementation</div>
+  <a href="#nodepty"><span class="nav-num">03</span>node-pty</a>
+  <a href="#xterm"><span class="nav-num">04</span>xterm.js</a>
+  <a href="#transport"><span class="nav-num">05</span>Socket.IO bridge</a>
+  <a href="#router"><span class="nav-num">06</span>Router &amp; WebSocket</a>
+  <div class="nav-group-label">Project walkthrough</div>
+  <a href="#lifecycle"><span class="nav-num">07</span>End-to-end lifecycle</a>
+  <a href="#code"><span class="nav-num">08</span>Code walkthrough</a>
+  <a href="#debug"><span class="nav-num">09</span>Debugging</a>
+  <div class="nav-group-label">Reference</div>
+  <a href="#compare"><span class="nav-num">10</span>Important contrasts</a>
+  <a href="#interview"><span class="nav-num">11</span>Interview drill</a>
+  <a href="#glossary"><span class="nav-num">12</span>Glossary</a>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="hero-eyebrow">codeSpace · Capstone · Terminal subsystem</div>
+  <h1>How our <em>browser terminal</em><br>actually works</h1>
+  <p class="hero-desc">A project-grounded study guide for the terminal implemented in the codeSpace capstone: xterm.js in React, Socket.IO as the transport, node-pty in the sandbox agent, and the router that carries the connection to the correct sandbox.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">React</span><span class="hero-tag">xterm.js</span><span class="hero-tag">Socket.IO</span>
+    <span class="hero-tag">node-pty</span><span class="hero-tag">PTY</span><span class="hero-tag">Kubernetes</span>
+    <span class="hero-tag">Project commit 3505dcc</span>
+  </div>
+  <div class="source">Primary implementation inspected from <a href="https://github.com/ankurdotio/cohort-2.0/tree/main/capstone" target="_blank">ankurdotio/cohort-2.0/capstone</a>. Commit: <a href="https://github.com/ankurdotio/cohort-2.0/commit/3505dcca8e580117540d414d022b35c84648f8f0" target="_blank">3505dcca</a>.</div>
+</section>
+
+<section class="section" id="summary">
+<div class="section-header"><div class="section-num-big">00</div><div class="section-title-block"><div class="section-title">What are we actually building?</div><div class="section-subtitle">Start with the job of each layer before learning its API</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p><strong>Our browser terminal is not one thing.</strong> It is a chain of components. The browser draws a terminal and captures keystrokes; the backend owns a real interactive shell through a pseudo-terminal; Socket.IO carries bytes/events between them; the router gets the connection to the right sandbox.</p></div>
+<div class="scale-diagram">
+<span class="hi">Browser</span> — React + xterm.js<br>
+&nbsp;&nbsp;&nbsp;│ <span class="green">terminal-input / terminal-output</span><br>
+&nbsp;&nbsp;&nbsp;▼<br>
+<span class="hi">Socket.IO</span> — event transport<br>
+&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;▼<br>
+<span class="green">Sandbox Agent</span> — Node.js + node-pty<br>
+&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;▼<br>
+<span class="hi">PTY</span> — interactive terminal interface<br>
+&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;▼<br>
+<span class="hi">bash / shell</span> — actual command execution<br>
+&nbsp;&nbsp;&nbsp;│<br>
+&nbsp;&nbsp;&nbsp;▼<br>
+<span class="hi">Linux process / filesystem</span>
+</div>
+<table class="compare">
+<thead><tr><th>Layer</th><th class="col-a">What it does NOT do</th><th class="col-b">What it does</th></tr></thead>
+<tbody>
+<tr><td class="row-label">xterm.js</td><td class="col-a">Does not execute <code>ls</code> or <code>npm</code>.</td><td class="col-b">Renders terminal output and captures keyboard input.</td></tr>
+<tr><td class="row-label">Socket.IO</td><td class="col-a">Does not become the shell.</td><td class="col-b">Moves terminal input/output events between client and agent.</td></tr>
+<tr><td class="row-label">node-pty</td><td class="col-a">Is not the visual terminal UI.</td><td class="col-b">Creates and controls an interactive pseudo-terminal process.</td></tr>
+<tr><td class="row-label">bash</td><td class="col-a">Does not know about React/xterm.js.</td><td class="col-b">Interprets commands and starts processes.</td></tr>
+<tr><td class="row-label">Router</td><td class="col-a">Does not execute terminal commands.</td><td class="col-b">Proxies traffic to the correct sandbox service.</td></tr>
+</tbody></table>
+<div class="note"><div class="note-icon">💡</div><p><strong>Study rule —</strong> whenever you see a terminal feature, ask: “Which layer owns this?” That one question prevents most confusion in this implementation.</p></div>
+</section>
+
+<section class="section" id="terminal">
+<div class="section-header"><div class="section-num-big">01</div><div class="section-title-block"><div class="section-title">Terminal fundamentals</div><div class="section-subtitle">stdin, stdout, stderr, shell, process — the pieces underneath the UI</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p>A terminal is an interface through which a user interacts with a command-line program. A <strong>shell</strong> such as bash is the program interpreting commands. The terminal UI and the shell are related, but they are not the same thing.</p></div>
+<h3>Input and output</h3>
+<table class="flag-table">
+<thead><tr><th>Stream / component</th><th>Simple meaning</th><th>In our system</th></tr></thead>
+<tbody>
+<tr><td><span class="f-name">stdin</span></td><td class="f-desc">Input supplied to a process.</td><td class="f-why">Keyboard data ultimately reaches the shell through the PTY.</td></tr>
+<tr><td><span class="f-name">stdout</span></td><td class="f-desc">Normal output from a process.</td><td class="f-why">PTY output is forwarded to the browser.</td></tr>
+<tr><td><span class="f-name">stderr</span></td><td class="f-desc">Diagnostic/error output.</td><td class="f-why">It can appear in the terminal stream just like other terminal output.</td></tr>
+<tr><td><span class="f-name">shell</span></td><td class="f-desc">Program that parses commands and starts processes.</td><td class="f-why">The agent defaults to <code>bash</code> unless <code>SHELL</code> is set.</td></tr>
+<tr><td><span class="f-name">process</span></td><td class="f-desc">A running program with its own execution context.</td><td class="f-why">The shell is a process; commands such as <code>npm</code> can create more processes.</td></tr>
+</tbody></table>
+<h3>Why a normal child process is not always enough</h3>
+<p>If a backend simply starts a command and pipes stdin/stdout, basic commands can work. Interactive programs, however, often care about terminal characteristics: cursor movement, terminal dimensions, line editing, control characters, colors, full-screen interfaces, and signals.</p>
+<table class="compare">
+<thead><tr><th>Approach</th><th>Limitation / behavior</th><th>Terminal experience</th></tr></thead>
+<tbody>
+<tr><td class="row-label">Plain process + pipes</td><td class="col-a">Good for simple non-interactive command execution.</td><td class="col-a">Not a complete terminal environment.</td></tr>
+<tr><td class="row-label">PTY</td><td class="col-b">Provides a pseudo-terminal interface.</td><td class="col-b">Much closer to an actual interactive shell.</td></tr>
+</tbody></table>
+<div class="warn"><div class="note-icon">⚠️</div><p><strong>Do not memorize “terminal = shell.”</strong> The shell is a process. The terminal is the interaction environment. Our architecture deliberately separates the browser terminal emulator from the backend shell.</p></div>
+</section>
+
+<section class="section" id="pty">
+<div class="section-header"><div class="section-num-big">02</div><div class="section-title-block"><div class="section-title">TTY vs PTY</div><div class="section-subtitle">The concept that explains why node-pty exists</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p><strong>TTY</strong> historically refers to a terminal device/interface. A <strong>PTY</strong> is a pseudo-terminal: software creates a terminal-like endpoint for a program, allowing another program to interact with that process as though it were attached to a terminal.</p></div>
+<h3>The useful mental model</h3>
+<div class="arch">
+<div class="arch-row">
+<div class="arch-box blue"><strong>Terminal emulator</strong><span>xterm.js in browser</span></div>
+<div class="arch-arrow">↔</div>
+<div class="arch-box gold"><strong>PTY</strong><span>node-pty</span></div>
+<div class="arch-arrow">↔</div>
+<div class="arch-box green"><strong>Shell</strong><span>bash</span></div>
+</div>
+</div>
+<p>The PTY is the bridge that makes the shell behave like it is attached to an interactive terminal rather than just being a detached process with simple pipes.</p>
+<h3>Why terminal size matters</h3>
+<p>A terminal has rows and columns. Programs can use that information for wrapping, layouts, prompts, and full-screen interfaces. Our agent initially creates the PTY with <code>cols: 80</code> and <code>rows: 30</code>.</p>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Project · sandbox/agent/src/app.js</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-comment">// Spawn the PTY process</span>
+<span class="c-key">const</span> ptyProcess = pty.spawn(shell, [], {
+    <span class="c-key">name:</span> <span class="c-str">'xterm-color'</span>,
+    <span class="c-key">cols:</span> <span class="c-val">80</span>,
+    <span class="c-key">rows:</span> <span class="c-val">30</span>,
+    <span class="c-key">cwd:</span> <span class="c-str">"/workspace"</span>,
+    <span class="c-key">env:</span> process.env
+});</pre></div>
+<div class="source">Source: sandbox/agent/src/app.js at commit 3505dcca.</div>
+</section>
+
+<section class="section" id="nodepty">
+<div class="section-header"><div class="section-num-big">03</div><div class="section-title-block"><div class="section-title">node-pty</div><div class="section-subtitle">The backend component that owns the interactive shell</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p><strong>node-pty</strong> is the project dependency used to create the pseudo-terminal process. In this project the agent selects a shell, spawns it inside <code>/workspace</code>, receives its output, and writes user input back into it.</p></div>
+<h3>Step 1 — Select the shell</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Project code</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> shell = process.env.SHELL || <span class="c-str">'bash'</span>;</pre></div>
+<p>There are two possibilities: use the <code>SHELL</code> environment variable, or fall back to <code>bash</code>.</p>
+<h3>Step 2 — Spawn the PTY</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Project code</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> ptyProcess = pty.spawn(shell, [], {
+    name: <span class="c-str">'xterm-color'</span>,
+    cols: <span class="c-val">80</span>,
+    rows: <span class="c-val">30</span>,
+    cwd: <span class="c-str">'/workspace'</span>,
+    env: process.env
+});</pre></div>
+<table class="flag-table">
+<thead><tr><th>Option</th><th>Meaning in this project</th></tr></thead>
+<tbody>
+<tr><td><span class="f-name">shell</span></td><td class="f-desc">Executable to start, normally <code>bash</code>.</td></tr>
+<tr><td><span class="f-name">[]</span></td><td class="f-desc">No explicit shell arguments are supplied here.</td></tr>
+<tr><td><span class="f-name">name</span></td><td class="f-desc">Terminal type identifier: <code>xterm-color</code>.</td></tr>
+<tr><td><span class="f-name">cols / rows</span></td><td class="f-desc">Initial terminal dimensions.</td></tr>
+<tr><td><span class="f-name">cwd</span></td><td class="f-desc">Shell starts in the shared workspace: <code>/workspace</code>.</td></tr>
+<tr><td><span class="f-name">env</span></td><td class="f-desc">Passes the agent process environment into the shell.</td></tr>
+</tbody></table>
+<h3>Step 3 — Read PTY output</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Project code</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre>ptyProcess.onData((data) =&gt; {
+    io.emit(<span class="c-str">'terminal-output'</span>, data);
+});</pre></div>
+<p>This is the backend half of the output path: <strong>shell → PTY → Socket.IO event → browser</strong>.</p>
+<h3>Step 4 — Write user input</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Project code</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre>socket.on(<span class="c-str">'terminal-input'</span>, (data) =&gt; {
+    ptyProcess.write(data);
+});</pre></div>
+<p>This is the reverse path: <strong>browser keyboard → Socket.IO event → PTY → shell</strong>.</p>
+<div class="note"><div class="note-icon">💡</div><p><strong>Key insight —</strong> the agent does not manually parse commands such as <code>ls</code>. It writes the user's terminal data into the PTY. The shell receives that input and decides what it means.</p></div>
+</section>
+
+<section class="section" id="xterm">
+<div class="section-header"><div class="section-num-big">04</div><div class="section-title-block"><div class="section-title">xterm.js</div><div class="section-subtitle">The browser-side terminal emulator</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p><strong>xterm.js is a terminal emulator implemented in JavaScript.</strong> In our React frontend it renders the terminal, handles keyboard interaction, writes received terminal data to the screen, and provides addons for fitting the terminal to its container and detecting web links.</p></div>
+<h3>Project dependencies</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">frontend/package.json</span></div><pre><span class="c-key">"@xterm/xterm"</span>: <span class="c-str">"^6.0.0"</span>,
+<span class="c-key">"@xterm/addon-fit"</span>: <span class="c-str">"^0.11.0"</span>,
+<span class="c-key">"@xterm/addon-web-links"</span>: <span class="c-str">"^0.12.0"</span>,
+<span class="c-key">"socket.io-client"</span>: <span class="c-str">"^4.8.3"</span></pre></div>
+<h3>Creating the terminal</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Terminal.jsx · simplified project excerpt</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> term = <span class="c-key">new</span> XTerm({
+  theme: { background: <span class="c-str">'#070b14'</span>, foreground: <span class="c-str">'#e2e8f0'</span> },
+  fontFamily: <span class="c-str">'"JetBrains Mono", "Fira Code", monospace'</span>,
+  fontSize: <span class="c-val">13</span>,
+  cursorBlink: <span class="c-val">true</span>,
+  cursorStyle: <span class="c-str">'bar'</span>,
+  scrollback: <span class="c-val">5000</span>
+});
+
+<span class="c-key">const</span> fitAddon = <span class="c-key">new</span> FitAddon();
+<span class="c-key">const</span> webLinksAddon = <span class="c-key">new</span> WebLinksAddon();
+
+term.loadAddon(fitAddon);
+term.loadAddon(webLinksAddon);
+term.open(containerRef.current);
+fitAddon.fit();</pre></div>
+<h3>Two methods you must remember</h3>
+<table class="compare">
+<thead><tr><th>API</th><th>Direction</th><th>Meaning in our terminal</th></tr></thead>
+<tbody>
+<tr><td class="row-label"><code>term.onData()</code></td><td class="col-a">Browser → backend</td><td class="col-b">User typed something; send it to Socket.IO.</td></tr>
+<tr><td class="row-label"><code>term.write()</code></td><td class="col-b">Backend → browser</td><td class="col-b">PTY produced output; render it in xterm.js.</td></tr>
+</tbody></table>
+<div class="code-wrap"><div class="code-header"><span class="code-label">The two directions</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-comment">// keyboard → server</span>
+term.onData((data) =&gt; {
+  socket.emit(<span class="c-str">'terminal-input'</span>, data);
+});
+
+<span class="c-comment">// server → terminal screen</span>
+socket.on(<span class="c-str">'terminal-output'</span>, (data) =&gt; {
+  term.write(data);
+});</pre></div>
+<div class="warn"><div class="note-icon">⚠️</div><p><strong>Do not reverse these in your mental model.</strong> <code>onData()</code> observes user input. <code>write()</code> writes output into the terminal emulator.</p></div>
+</section>
+
+<section class="section" id="transport">
+<div class="section-header"><div class="section-num-big">05</div><div class="section-title-block"><div class="section-title">Socket.IO bridge</div><div class="section-subtitle">Turning browser events into PTY input and PTY output into browser events</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p>The project uses <strong>Socket.IO</strong> for the terminal connection. The important abstraction is an event channel: the client emits <code>terminal-input</code>; the server emits <code>terminal-output</code>.</p></div>
+<h3>Browser connection</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Terminal.jsx</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> agentHost = <span class="c-str">`http://${sandboxId}.agent.localhost`</span>;
+
+<span class="c-key">const</span> socket = io(agentHost, {
+  transports: [<span class="c-str">'websocket'</span>, <span class="c-str">'polling'</span>],
+  reconnectionAttempts: <span class="c-val">5</span>,
+  reconnectionDelay: <span class="c-val">1000</span>,
+});</pre></div>
+<h3>Server connection</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">sandbox/agent/src/app.js</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> io = <span class="c-key">new</span> Server(httpServer, {
+  cors: {
+    origin: <span class="c-str">"*"</span>,
+    methods: [<span class="c-str">"GET"</span>, <span class="c-str">"POST"</span>, <span class="c-str">"PATCH"</span>],
+  }
+});
+
+io.on(<span class="c-str">"connection"</span>, (socket) =&gt; {
+  socket.on(<span class="c-str">"terminal-input"</span>, (data) =&gt; {
+    ptyProcess.write(data);
+  });
+});</pre></div>
+<h3>Why not just send HTTP requests?</h3>
+<p>A terminal is continuous and interactive. A user can type one character, receive output, type another character, press Ctrl+C, receive a prompt, start a program, and continue interacting. A persistent bidirectional connection fits that pattern better than one HTTP request per keystroke.</p>
+<div class="note"><div class="note-icon">💡</div><p><strong>Project wording —</strong> the codeSpace documentation describes the terminal as “xterm.js terminal connected via Socket.IO” and the router as handling WebSocket upgrades for Socket.IO terminal traffic.</p></div>
+</section>
+
+<section class="section" id="router">
+<div class="section-header"><div class="section-num-big">06</div><div class="section-title-block"><div class="section-title">Router &amp; WebSocket path</div><div class="section-subtitle">How the connection reaches the correct per-sandbox agent</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p>The browser connects to a sandbox-specific hostname such as <code>{sandboxId}.agent.localhost</code>. The router extracts the sandbox ID from the host and proxies the request/upgrade to the matching Kubernetes service.</p></div>
+<div class="arch">
+<div class="arch-row">
+<div class="arch-box blue"><strong>Browser</strong><span>id.agent.localhost</span></div>
+<div class="arch-arrow">→</div>
+<div class="arch-box accent"><strong>Ingress / Router</strong><span>host → sandboxId</span></div>
+<div class="arch-arrow">→</div>
+<div class="arch-box green"><strong>K8s Service</strong><span>sandbox-service-{id}</span></div>
+<div class="arch-arrow">→</div>
+<div class="arch-box gold"><strong>Agent</strong><span>port 3000</span></div>
+</div>
+</div>
+<h3>HTTP and upgrade handling</h3>
+<p>The router creates normal HTTP proxy middleware for sandbox traffic and a shared <code>httpxy</code> proxy server for WebSocket upgrades.</p>
+<div class="code-wrap"><div class="code-header"><span class="code-label">sandbox/router/src/app.js</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> wsProxy = createProxyServer({ changeOrigin: <span class="c-val">true</span> });
+
+server.on(<span class="c-str">'upgrade'</span>, (req, socket, head) =&gt; {
+  <span class="c-key">const</span> host = req.headers.host;
+  <span class="c-key">const</span> sandboxId = host.split(<span class="c-str">'.'</span>)[<span class="c-val">0</span>];
+  <span class="c-key">const</span> type = host.split(<span class="c-str">'.'</span>)[<span class="c-val">1</span>];
+
+  <span class="c-key">if</span> (type === <span class="c-str">'agent'</span>) {
+    wsProxy.ws(
+      req, socket,
+      { target: <span class="c-str">`http://sandbox-service-${sandboxId}:3000`</span> },
+      head
+    );
+  }
+});</pre></div>
+<div class="warn"><div class="note-icon">⚠️</div><p><strong>This area was a real project debugging point.</strong> The repository change log records that the router had to move away from an incorrect WebSocket upgrade approach and use a shared <code>httpxy</code> proxy server with <code>.ws()</code>.</p></div>
+<p>That matters because terminal traffic is not useful if the browser can connect to the router but the upgrade never reaches the agent.</p>
+</section>
+
+<section class="section" id="lifecycle">
+<div class="section-header"><div class="section-num-big">07</div><div class="section-title-block"><div class="section-title">End-to-end terminal lifecycle</div><div class="section-subtitle">Follow one character from your keyboard to bash and back</div></div></div>
+<div class="concept"><div class="concept-label">Core concept</div><p>If you can explain this lifecycle without looking at the code, you understand the terminal implementation.</p></div>
+<div class="flow">
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">1. React mounts Terminal</div><div class="flow-detail">The component creates an xterm.js instance and fits it to its container.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">2. Browser connects to the agent hostname</div><div class="flow-detail">Socket.IO connects to http://{sandboxId}.agent.localhost.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">3. Router receives the connection</div><div class="flow-detail">The sandbox ID is derived from the hostname and traffic is proxied to the corresponding sandbox service.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">4. Agent has already spawned bash through node-pty</div><div class="flow-detail">The PTY starts in /workspace with the configured environment and initial dimensions.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">5. User presses a key</div><div class="flow-detail">xterm.js emits data through term.onData().</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">6. Socket.IO emits terminal-input</div><div class="flow-detail">The raw terminal data is sent to the agent.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">7. Agent writes into the PTY</div><div class="flow-detail">ptyProcess.write(data) feeds the data to the interactive shell.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div><div class="flow-connector"></div></div><div class="flow-content"><div class="flow-title">8. Shell executes / responds</div><div class="flow-detail">bash interprets the input and produces terminal output.</div></div></div>
+<div class="flow-step"><div class="flow-line"><div class="flow-dot"></div></div><div class="flow-content"><div class="flow-title">9. Output travels back</div><div class="flow-detail">PTY onData → Socket.IO terminal-output → xterm.js term.write() → pixels in the browser.</div></div></div>
+</div>
+<div class="scale-diagram">
+<span class="hi">KEYSTROKE</span>
+  ↓
+<span class="green">xterm.js term.onData()</span>
+  ↓
+<span class="green">socket.emit('terminal-input')</span>
+  ↓
+<span class="hi">router / Socket.IO transport</span>
+  ↓
+<span class="green">ptyProcess.write(data)</span>
+  ↓
+<span class="hi">bash</span>
+  ↓
+<span class="green">ptyProcess.onData(data)</span>
+  ↓
+<span class="green">io.emit('terminal-output', data)</span>
+  ↓
+<span class="green">socket.on('terminal-output')</span>
+  ↓
+<span class="green">term.write(data)</span>
+  ↓
+<span class="hi">SCREEN</span>
+</div>
+</section>
+
+<section class="section" id="code">
+<div class="section-header"><div class="section-num-big">08</div><div class="section-title-block"><div class="section-title">Code walkthrough</div><div class="section-subtitle">Read the implementation in the same order the system operates</div></div></div>
+<span class="step-label blue">Step 1</span>
+<h3>Agent creates the PTY</h3>
+<p>File: <code>capstone/sandbox/agent/src/app.js</code>.</p>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Backend ownership</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> shell = process.env.SHELL || <span class="c-str">'bash'</span>;
+
+<span class="c-key">const</span> ptyProcess = pty.spawn(shell, [], {
+  name: <span class="c-str">'xterm-color'</span>,
+  cols: <span class="c-val">80</span>,
+  rows: <span class="c-val">30</span>,
+  cwd: <span class="c-str">'/workspace'</span>,
+  env: process.env
+});</pre></div>
+<span class="step-label">Step 2</span>
+<h3>Agent exposes Socket.IO</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Connection + events</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> io = <span class="c-key">new</span> Server(httpServer, { ... });
+
+io.on(<span class="c-str">'connection'</span>, (socket) =&gt; {
+  socket.on(<span class="c-str">'terminal-input'</span>, (data) =&gt; {
+    ptyProcess.write(data);
+  });
+});</pre></div>
+<span class="step-label green">Step 3</span>
+<h3>Agent forwards PTY output</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Output event</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre>ptyProcess.onData((data) =&gt; {
+  io.emit(<span class="c-str">'terminal-output'</span>, data);
+});</pre></div>
+<span class="step-label blue">Step 4</span>
+<h3>Frontend creates xterm.js</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Terminal.jsx</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> term = <span class="c-key">new</span> XTerm({ ... });
+term.loadAddon(<span class="c-key">new</span> FitAddon());
+term.loadAddon(<span class="c-key">new</span> WebLinksAddon());
+term.open(containerRef.current);</pre></div>
+<span class="step-label green">Step 5</span>
+<h3>Frontend binds both directions</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Terminal.jsx</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre>socket.on(<span class="c-str">'terminal-output'</span>, (data) =&gt; {
+  term.write(data);
+});
+
+term.onData((data) =&gt; {
+  socket.emit(<span class="c-str">'terminal-input'</span>, data);
+});</pre></div>
+<span class="step-label gold">Step 6</span>
+<h3>Resize behavior</h3>
+<p>The frontend observes the terminal container with <code>ResizeObserver</code> and calls the xterm <code>FitAddon</code> to recalculate its display dimensions.</p>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Terminal.jsx</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-key">const</span> observer = <span class="c-key">new</span> ResizeObserver(() =&gt; {
+  <span class="c-key">if</span> (fitAddonRef.current) {
+    fitAddonRef.current.fit();
+  }
+});</pre></div>
+<div class="note"><div class="note-icon">💡</div><p><strong>Important limitation in this version —</strong> the inspected Terminal.jsx fits the browser-side xterm display, while the agent creates its PTY with fixed initial dimensions of 80×30. The project code shown here does not contain a matching client-to-PTY <code>resize()</code> event.</p></div>
+</section>
+
+<section class="section" id="debug">
+<div class="section-header"><div class="section-num-big">09</div><div class="section-title-block"><div class="section-title">Debugging the terminal</div><div class="section-subtitle">Trace failures by layer instead of randomly changing code</div></div></div>
+<table class="flag-table">
+<thead><tr><th>Symptom</th><th>First layer to inspect</th><th>What to verify</th></tr></thead>
+<tbody>
+<tr><td><span class="f-name">Terminal UI is blank</span></td><td class="f-val">xterm.js</td><td class="f-desc">Container ref, <code>term.open()</code>, CSS height, xterm CSS import.</td></tr>
+<tr><td><span class="f-name">Terminal says disconnected</span></td><td class="f-val">Socket.IO</td><td class="f-desc">Agent hostname, browser network tab, Socket.IO connection errors, router path.</td></tr>
+<tr><td><span class="f-name">Connected but no prompt</span></td><td class="f-val">PTY / agent</td><td class="f-desc">Agent logs, <code>pty.spawn()</code>, shell availability, <code>/workspace</code>.</td></tr>
+<tr><td><span class="f-name">Typing does nothing</span></td><td class="f-val">Input path</td><td class="f-desc"><code>term.onData()</code> → <code>terminal-input</code> → <code>ptyProcess.write()</code>.</td></tr>
+<tr><td><span class="f-name">Commands run but output is missing</span></td><td class="f-val">Output path</td><td class="f-desc"><code>ptyProcess.onData()</code> → <code>terminal-output</code> → <code>term.write()</code>.</td></tr>
+<tr><td><span class="f-name">Wrong sandbox responds</span></td><td class="f-val">Router / K8s</td><td class="f-desc">Hostname parsing and the sandbox-specific service target/selector.</td></tr>
+<tr><td><span class="f-name">WebSocket upgrade fails</span></td><td class="f-val">Router</td><td class="f-desc">The project's <code>httpxy</code> upgrade handling and target service.</td></tr>
+<tr><td><span class="f-name">Terminal fits visually but wrapping is wrong</span></td><td class="f-val">PTY dimensions</td><td class="f-desc">Browser fit and backend PTY dimensions are separate concerns in this version.</td></tr>
+</tbody></table>
+<h3>Useful debugging commands</h3>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Kubernetes · inspect sandbox pods</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-cmd">kubectl get pods</span>
+<span class="c-cmd">kubectl get svc</span>
+<span class="c-cmd">kubectl logs</span> <span class="c-val">&lt;agent-pod&gt;</span>
+<span class="c-cmd">kubectl describe pod</span> <span class="c-val">&lt;agent-pod&gt;</span></pre></div>
+<div class="code-wrap"><div class="code-header"><span class="code-label">Direct agent health check</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><span class="c-cmd">curl</span> <span class="c-val">http://&lt;sandbox-id&gt;.agent.localhost/</span>
+<span class="c-cmd">curl</span> <span class="c-val">http://&lt;sandbox-id&gt;.agent.localhost/list-files</span></pre></div>
+<div class="warn"><div class="note-icon">⚠️</div><p><strong>Debug from the outside inward:</strong> browser → router → service → agent → PTY → shell. Do not start by rewriting the PTY code if the Socket.IO connection never reaches the agent.</p></div>
+</section>
+
+<section class="section" id="compare">
+<div class="section-header"><div class="section-num-big">10</div><div class="section-title-block"><div class="section-title">Important contrasts</div><div class="section-subtitle">These are the distinctions most likely to get mixed up</div></div></div>
+<table class="compare">
+<thead><tr><th>Pair</th><th>Thing A</th><th>Thing B</th></tr></thead>
+<tbody>
+<tr><td class="row-label">xterm.js vs shell</td><td class="col-a">UI/emulator in browser.</td><td class="col-b">Command interpreter running on backend.</td></tr>
+<tr><td class="row-label">PTY vs process</td><td class="col-a">Terminal-like interface attached to a process.</td><td class="col-b">Running program itself.</td></tr>
+<tr><td class="row-label">Socket.IO vs WebSocket</td><td class="col-a">Higher-level realtime framework with events and fallback behavior.</td><td class="col-b">A protocol/channel mechanism for persistent bidirectional communication.</td></tr>
+<tr><td class="row-label">Router vs agent</td><td class="col-a">Routes traffic to the correct sandbox.</td><td class="col-b">Owns the shell/PTy and file APIs.</td></tr>
+<tr><td class="row-label">FitAddon vs PTY resize</td><td class="col-a">Changes how xterm.js fits its visual container.</td><td class="col-b">Changes the dimensions known by the backend terminal process.</td></tr>
+<tr><td class="row-label">Terminal vs shell</td><td class="col-a">Interaction environment.</td><td class="col-b">Program interpreting commands.</td></tr>
+</tbody></table>
+<div class="quiz">
+<h3>One-minute self-test</h3>
+<ol>
+<li>If I type <code>pwd</code>, which component first sees the keyboard data? <strong>xterm.js</strong>.</li>
+<li>Which function forwards that data from xterm.js? <strong><code>term.onData()</code></strong>.</li>
+<li>Which Socket.IO event carries it? <strong><code>terminal-input</code></strong>.</li>
+<li>What does the agent do with it? <strong><code>ptyProcess.write(data)</code></strong>.</li>
+<li>Who interprets <code>pwd</code>? <strong>The shell</strong>.</li>
+<li>How does output return? <strong>PTY → <code>onData</code> → <code>terminal-output</code> → <code>term.write</code></strong>.</li>
+</ol>
+</div>
+</section>
+
+<section class="section" id="interview">
+<div class="section-header"><div class="section-num-big">11</div><div class="section-title-block"><div class="section-title">Interview drill</div><div class="section-subtitle">Answer these in your own words before reading the reference answer</div></div></div>
+<h3>Q1 — Why did we use node-pty?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>Because the backend needs an interactive pseudo-terminal attached to a shell. The terminal should behave like a real interactive shell rather than just a one-shot command executor. node-pty creates that PTY-backed process and gives the application input/output hooks.</p></div>
+<h3>Q2 — Is xterm.js executing commands?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>No. xterm.js is the browser-side terminal emulator. It renders terminal output and captures user input. The actual command execution occurs in the sandbox through the shell attached to the PTY.</p></div>
+<h3>Q3 — Why use Socket.IO?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>The terminal is a long-lived, interactive, bidirectional stream of user input and process output. Socket.IO gives the project a persistent connection with named events such as <code>terminal-input</code> and <code>terminal-output</code>.</p></div>
+<h3>Q4 — What does the router do?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>The router is the traffic-distribution layer. It reads the sandbox ID from the hostname and proxies HTTP and WebSocket traffic to the corresponding per-sandbox Kubernetes service. It is not the process executing shell commands.</p></div>
+<h3>Q5 — Explain the complete architecture in 30 seconds.</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>The React frontend uses xterm.js as the terminal emulator. When the user types, xterm.js emits the data through Socket.IO. The router routes the sandbox-specific connection to the sandbox agent. The agent uses node-pty to run an interactive shell inside <code>/workspace</code>. Shell output comes back through the PTY, the agent emits it as a Socket.IO event, and xterm.js renders it.</p></div>
+<h3>Q6 — What is a PTY?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>A PTY, or pseudo-terminal, is a software-created terminal interface that allows a process such as a shell to interact as though it were connected to a terminal. That is important for interactive command-line behavior.</p></div>
+<h3>Q7 — What would you inspect if the terminal connects but typing has no effect?</h3>
+<div class="concept"><div class="concept-label">Reference answer</div><p>Trace the input path: <code>term.onData()</code> → Socket.IO <code>terminal-input</code> → agent socket handler → <code>ptyProcess.write()</code> → shell. Check each boundary rather than changing xterm styling or PTY creation blindly.</p></div>
+</section>
+
+<section class="section" id="glossary">
+<div class="section-header"><div class="section-num-big">12</div><div class="section-title-block"><div class="section-title">Glossary</div><div class="section-subtitle">Keep these definitions short enough to recall during debugging</div></div></div>
+<table class="flag-table">
+<thead><tr><th>Term</th><th>Simple meaning</th><th>Where it appears in codeSpace</th></tr></thead>
+<tbody>
+<tr><td><span class="f-name">Terminal emulator</span></td><td class="f-desc">Program that renders terminal behavior for the user.</td><td class="f-why">xterm.js in the browser.</td></tr>
+<tr><td><span class="f-name">Shell</span></td><td class="f-desc">Program that interprets command-line input.</td><td class="f-why">bash, started by node-pty.</td></tr>
+<tr><td><span class="f-name">TTY</span></td><td class="f-desc">Terminal device/interface concept.</td><td class="f-why">Underlying terminal model.</td></tr>
+<tr><td><span class="f-name">PTY</span></td><td class="f-desc">Pseudo-terminal interface created in software.</td><td class="f-why">Created through node-pty.</td></tr>
+<tr><td><span class="f-name">node-pty</span></td><td class="f-desc">Node library used here to spawn/control the PTY.</td><td class="f-why">sandbox/agent.</td></tr>
+<tr><td><span class="f-name">Socket.IO</span></td><td class="f-desc">Realtime client/server communication framework.</td><td class="f-why">Browser ↔ sandbox agent.</td></tr>
+<tr><td><span class="f-name">terminal-input</span></td><td class="f-desc">Socket.IO event carrying terminal input.</td><td class="f-why">Frontend → agent.</td></tr>
+<tr><td><span class="f-name">terminal-output</span></td><td class="f-desc">Socket.IO event carrying PTY output.</td><td class="f-why">Agent → frontend.</td></tr>
+<tr><td><span class="f-name">PTY dimensions</span></td><td class="f-desc">Rows and columns known by the terminal process.</td><td class="f-why">Agent starts at 80×30 in this version.</td></tr>
+<tr><td><span class="f-name">FitAddon</span></td><td class="f-desc">xterm.js addon that fits the visual terminal to its container.</td><td class="f-why">Frontend Terminal.jsx.</td></tr>
+<tr><td><span class="f-name">WebSocket upgrade</span></td><td class="f-desc">HTTP connection transition used to establish a WebSocket connection.</td><td class="f-why">Router's upgrade handling.</td></tr>
+<tr><td><span class="f-name">Sandbox service</span></td><td class="f-desc">Kubernetes service representing a sandbox target.</td><td class="f-why">Router target is sandbox-specific.</td></tr>
+</tbody></table>
+<div class="note"><div class="note-icon">📌</div><p><strong>Final mental model:</strong> <code>xterm.js</code> is the face, <code>Socket.IO</code> is the transport, <code>router</code> is the traffic director, <code>node-pty</code> is the terminal bridge, and <code>bash</code> is the command interpreter.</p></div>
+</section>
+
+<hr class="divider">
+<footer>
+<span>codeSpace · Terminal Engineering Notes V1</span>
+<span>xterm.js · Socket.IO · node-pty · PTY · Kubernetes</span>
+</footer>
+</main>
+</div>
+
+<script>
+const sections=document.querySelectorAll('section[id]');
+const navLinks=document.querySelectorAll('nav a');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      navLinks.forEach(l=>l.classList.remove('active'));
+      document.querySelector(`nav a[href="#${e.target.id}"]`)?.classList.add('active');
+    }
+  });
+},{threshold:.25});
+sections.forEach(s=>io.observe(s));
+function copyCode(btn){
+  const text=btn.closest('.code-wrap').querySelector('pre').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='copied!';
+    setTimeout(()=>btn.textContent='copy',1800);
+  });
+}
+</script>
+</body>
+</html>
